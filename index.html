@@ -1,0 +1,539 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>L × 舞子 ― 犯されゲーム</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Shippori+Mincho:wght@400;600&amp;family=Zen+Kaku+Gothic+New:wght@400;500&amp;display=swap');
+
+  :root {
+    --bg: #0d0d12;
+    --panel: #16161f;
+    --accent: #c9a227;
+    --text: #e8e6e3;
+    --danger: #a33a3a;
+    --soft: #8b7e66;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Zen Kaku Gothic New', sans-serif;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 20px 12px 40px;
+    line-height: 1.7;
+  }
+
+  h1 {
+    font-family: 'Shippori Mincho', serif;
+    font-weight: 600;
+    font-size: 1.55rem;
+    letter-spacing: 0.12em;
+    color: var(--accent);
+    margin-bottom: 6px;
+    text-align: center;
+  }
+
+  .subtitle {
+    font-size: 0.78rem;
+    color: var(--soft);
+    margin-bottom: 28px;
+    letter-spacing: 0.08em;
+  }
+
+  #status {
+    width: 100%;
+    max-width: 520px;
+    background: var(--panel);
+    border: 1px solid #2a2a35;
+    border-radius: 10px;
+    padding: 16px 18px;
+    margin-bottom: 22px;
+    display: grid;
+    gap: 10px;
+  }
+
+  .stat-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 0.85rem;
+  }
+
+  .stat-label {
+    width: 52px;
+    color: var(--soft);
+    flex-shrink: 0;
+  }
+
+  .bar-bg {
+    flex: 1;
+    height: 11px;
+    background: #22222c;
+    border-radius: 6px;
+    overflow: hidden;
+  }
+
+  .bar-fill {
+    height: 100%;
+    border-radius: 6px;
+    transition: width 0.45s ease;
+  }
+
+  .bar-arousal { background: linear-gradient(90deg, #7a2a4a, #c94a6a); }
+  .bar-reason  { background: linear-gradient(90deg, #2a4a7a, #4a7ac9); }
+  .bar-sense   { background: linear-gradient(90deg, #5a3a7a, #9a6ac9); }
+  .bar-stamina { background: linear-gradient(90deg, #3a5a3a, #6ac96a); }
+
+  .stat-val {
+    width: 36px;
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+    color: #ccc;
+  }
+
+  #scene {
+    width: 100%;
+    max-width: 520px;
+    background: var(--panel);
+    border: 1px solid #2a2a35;
+    border-radius: 10px;
+    padding: 22px 20px;
+    margin-bottom: 18px;
+    min-height: 210px;
+    position: relative;
+  }
+
+  #narrative {
+    font-size: 0.95rem;
+    white-space: pre-wrap;
+    margin-bottom: 18px;
+  }
+
+  #dialogue {
+    border-left: 3px solid var(--accent);
+    padding-left: 14px;
+    margin: 16px 0;
+    color: #f0e6c8;
+    font-style: italic;
+    font-size: 0.92rem;
+  }
+
+  #choices {
+    width: 100%;
+    max-width: 520px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  button.choice {
+    background: #1e1e28;
+    border: 1px solid #3a3a48;
+    color: var(--text);
+    padding: 13px 16px;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    cursor: pointer;
+    text-align: left;
+    transition: all 0.2s;
+    font-family: inherit;
+  }
+
+  button.choice:hover {
+    background: #2a2a38;
+    border-color: var(--accent);
+    color: #fff;
+  }
+
+  button.choice:disabled {
+    opacity: 0.35;
+    cursor: not-allowed;
+  }
+
+  #ending {
+    display: none;
+    width: 100%;
+    max-width: 520px;
+    background: var(--panel);
+    border: 1px solid var(--accent);
+    border-radius: 10px;
+    padding: 28px 22px;
+    text-align: center;
+  }
+
+  #ending h2 {
+    font-family: 'Shippori Mincho', serif;
+    color: var(--accent);
+    margin-bottom: 16px;
+    font-size: 1.3rem;
+  }
+
+  .restart {
+    margin-top: 22px;
+    background: transparent;
+    border: 1px solid var(--accent);
+    color: var(--accent);
+    padding: 10px 28px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.9rem;
+  }
+
+  .restart:hover { background: var(--accent); color: #111; }
+
+  .hidden { display: none !important; }
+
+  .sfx {
+    color: #d4a0b0;
+    font-size: 0.88rem;
+  }
+</style>
+</head>
+<body>
+
+<h1>L × 舞子</h1>
+<div class="subtitle">— 犯されゲーム —</div>
+
+<div id="status">
+  <div class="stat-row">
+    <span class="stat-label">興奮</span>
+    <div class="bar-bg"><div class="bar-fill bar-arousal" id="bar-arousal" style="width:12%"></div></div>
+    <span class="stat-val" id="val-arousal">12</span>
+  </div>
+  <div class="stat-row">
+    <span class="stat-label">理性</span>
+    <div class="bar-bg"><div class="bar-fill bar-reason" id="bar-reason" style="width:88%"></div></div>
+    <span class="stat-val" id="val-reason">88</span>
+  </div>
+  <div class="stat-row">
+    <span class="stat-label">感度</span>
+    <div class="bar-bg"><div class="bar-fill bar-sense" id="bar-sense" style="width:25%"></div></div>
+    <span class="stat-val" id="val-sense">25</span>
+  </div>
+  <div class="stat-row">
+    <span class="stat-label">体力</span>
+    <div class="bar-bg"><div class="bar-fill bar-stamina" id="bar-stamina" style="width:100%"></div></div>
+    <span class="stat-val" id="val-stamina">100</span>
+  </div>
+</div>
+
+<div id="scene">
+  <div id="narrative"></div>
+  <div id="dialogue" class="hidden"></div>
+</div>
+
+<div id="choices"></div>
+
+<div id="ending">
+  <h2 id="end-title"></h2>
+  <div id="end-text"></div>
+  <button class="restart" onclick="location.reload()">もう一度</button>
+</div>
+
+<script>
+/* ========== パラメータ ========== */
+const state = {
+  arousal: 12,
+  reason: 88,
+  sense: 25,
+  stamina: 100,
+  stage: 0,
+  flags: {}
+};
+
+/* ========== ランダムセリフプール ========== */
+const lines = {
+  tease: [
+    "……舞子。動かないでください。今の貴女は、私の指一本で崩れてしまいますよ。",
+    "抵抗するほど、感度が上がっていくのがわかります。面白いですね。",
+    "貴女の身体はもう正直です。ここがこんなに熱くなっているのに、まだ拒否するのですか？",
+    "私は急いでいません。ゆっくり、貴女の理性を削っていきますから。"
+  ],
+  force: [
+    "……だめです。今から先は、貴女の意志では止められません。",
+    "脚を開いてください。私に全部見せて。隠す必要はありません。",
+    "泣いても、嫌がっても、私は止めません。貴女が欲しいと言ったのと同じことなんです。",
+    "ほら……もう入れていますよ。奥まで、ゆっくりと。"
+  ],
+  deep: [
+    "中が熱く締め付けてきますね……舞子。私のものだと、身体が覚えてしまっている。",
+    "もっと深く……ここにぶつかるたび、貴女の声が甘く壊れるのがわかります。",
+    "腰を動かしますよ。逃げられないように、しっかりと押さえますから。",
+    "理性が残っているうちに、はっきり言ってください。……誰に犯されているのですか？"
+  ],
+  climax: [
+    "イキますか？ 私の中で、私のものとして、果ててください。",
+    "だめです。まだ許可していません。……でも、もう我慢できないようですね。",
+    "一緒に……舞子の中に、全部出します。受け止めてください。",
+    "……可愛い声ですね。もっと聞かせて。私だけが聞ける、壊れた声を。"
+  ],
+  after: [
+    "……まだ繋がったままです。抜く必要は、ありませんよね。",
+    "貴女の中が、私のものを離したくないと言っています。……正直でいいです。",
+    "少し休みましょう。ただし、私の腕の中で、です。",
+    "次は、もっと奥まで……ね。"
+  ]
+};
+
+function rand(arr) {
+  return arr[Math.floor(Math.random() * arr.length)];
+}
+
+function clamp(v) {
+  return Math.max(0, Math.min(100, v));
+}
+
+function updateBars() {
+  document.getElementById('bar-arousal').style.width = state.arousal + '%';
+  document.getElementById('bar-reason').style.width = state.reason + '%';
+  document.getElementById('bar-sense').style.width = state.sense + '%';
+  document.getElementById('bar-stamina').style.width = state.stamina + '%';
+  document.getElementById('val-arousal').textContent = state.arousal;
+  document.getElementById('val-reason').textContent = state.reason;
+  document.getElementById('val-sense').textContent = state.sense;
+  document.getElementById('val-stamina').textContent = state.stamina;
+}
+
+function setNarrative(text) {
+  document.getElementById('narrative').innerHTML = text;
+}
+
+function setDialogue(text) {
+  const el = document.getElementById('dialogue');
+  if (text) {
+    el.textContent = '「' + text + '」';
+    el.classList.remove('hidden');
+  } else {
+    el.classList.add('hidden');
+  }
+}
+
+function setChoices(list) {
+  const box = document.getElementById('choices');
+  box.innerHTML = '';
+  list.forEach(c => {
+    const btn = document.createElement('button');
+    btn.className = 'choice';
+    btn.textContent = c.label;
+    btn.onclick = () => c.action();
+    box.appendChild(btn);
+  });
+}
+
+function checkEnd() {
+  if (state.stamina <= 0) {
+    endGame('体力尽きた', '舞子の身体は限界を超え、意識が遠のいていく……。\n\nLは静かに貴女を抱き寄せ、額にキスを落とす。\n「……お疲れ様です。次は、もっと優しくしてあげますね。」');
+    return true;
+  }
+  if (state.arousal >= 100 && state.reason <= 15) {
+    endGame('完全屈服', '理性がほとんど残っていない状態で、舞子はLのすべてを受け入れ、何度も果てた。\n\n「……もう、私以外の男を知らない身体にしてしまいましたね。\n貴女は、私だけのものです。」');
+    return true;
+  }
+  return false;
+}
+
+function endGame(title, text) {
+  document.getElementById('scene').classList.add('hidden');
+  document.getElementById('choices').classList.add('hidden');
+  document.getElementById('status').classList.add('hidden');
+  document.getElementById('ending').style.display = 'block';
+  document.getElementById('end-title').textContent = title;
+  document.getElementById('end-text').innerHTML = text.replace(/\n/g, '<br>');
+}
+
+/* ========== ステージ進行 ========== */
+const stages = [
+  // 0: 導入
+  () => {
+    setNarrative('薄暗い部屋。窓の外は夜。\n\nLはいつものように椅子に座り、親指を口に咥えながら貴女を見ている。\n突然、彼は静かに立ち上がり、貴女の側へ歩み寄った。\n\n「……今夜は、少し特別な夜にしましょう。」');
+    setDialogue(null);
+    setChoices([
+      { label: '「……どういう意味ですか？」と尋ねる', action: () => {
+        state.arousal += 5;
+        state.reason -= 3;
+        updateBars();
+        nextStage();
+      }},
+      { label: '黙って彼の顔を見つめる', action: () => {
+        state.arousal += 8;
+        state.sense += 4;
+        updateBars();
+        nextStage();
+      }}
+    ]);
+  },
+
+  // 1: 触れる
+  () => {
+    setNarrative('Lの指が、貴女の顎をそっと持ち上げる。\n熱い息が唇に近づき、それからゆっくりと耳元へ滑る。\n\n「動かないでください。……触りますから。」\n\n首筋に唇が落ち、軽い歯が皮膚を捉える。');
+    setDialogue(rand(lines.tease));
+    setChoices([
+      { label: '体を硬くして耐える', action: () => {
+        state.arousal += 10;
+        state.reason -= 8;
+        state.sense += 6;
+        updateBars();
+        if (!checkEnd()) nextStage();
+      }},
+      { label: '小さく喘いでしまう', action: () => {
+        state.arousal += 15;
+        state.reason -= 12;
+        state.sense += 10;
+        updateBars();
+        if (!checkEnd()) nextStage();
+      }},
+      { label: '「やめて……」と拒む', action: () => {
+        state.arousal += 7;
+        state.reason -= 5;
+        state.stamina -= 5;
+        updateBars();
+        if (!checkEnd()) nextStage();
+      }}
+    ]);
+  },
+
+  // 2: 衣服を剥ぐ
+  () => {
+    setNarrative('Lの手がブラウスのボタンを一つずつ外していく。\n急がず、丁寧に。\n\n「貴女の身体は、私にはもう隠しごとができません。……ここも、すでに湿っていますね。」\n\n下着の上から、熱を持った指が秘部をゆっくりと撫でる。');
+    setDialogue(rand(lines.tease));
+    setChoices([
+      { label: '腿を閉じて抵抗する', action: () => {
+        state.arousal += 12;
+        state.reason -= 10;
+        state.sense += 8;
+        state.stamina -= 8;
+        updateBars();
+        if (!checkEnd()) nextStage();
+      }},
+      { label: '脚を開いてしまう', action: () => {
+        state.arousal += 20;
+        state.reason -= 15;
+        state.sense += 12;
+        updateBars();
+        if (!checkEnd()) nextStage();
+      }}
+    ]);
+  },
+
+  // 3: 強制的に
+  () => {
+    setNarrative('Lは貴女をソファに押し倒し、両手首を片手で頭上に固定する。\nもう片方の手で、すでに濡れた入口を指で割り、ゆっくりと中へ沈めていく。\n\n<span class="sfx">ぬちゅ……くちゅっ♡</span>\n\n「……入れてしまいますよ。嫌でも、受け入れるしかありません。」');
+    setDialogue(rand(lines.force));
+    setChoices([
+      { label: '腰をよじって逃げようとする', action: () => {
+        state.arousal += 15;
+        state.reason -= 12;
+        state.sense += 10;
+        state.stamina -= 12;
+        updateBars();
+        if (!checkEnd()) nextStage();
+      }},
+      { label: '力を抜いて受け入れてしまう', action: () => {
+        state.arousal += 25;
+        state.reason -= 20;
+        state.sense += 15;
+        updateBars();
+        if (!checkEnd()) nextStage();
+      }}
+    ]);
+  },
+
+  // 4: 本格的に犯す
+  () => {
+    setNarrative('硬いものが、一気に根元まで埋まる。\n\n<span class="sfx">ずぶっ♡……んっ、奥まで……</span>\n\nLは貴女の腰をしっかりと掴み、容赦なく動き始める。\n毎度、子宮口を軽く抉るように突いてくる。\n\n「ほら……中が吸いついてきます。私を欲しがっているのが、はっきりわかりますよ。」');
+    setDialogue(rand(lines.deep));
+    setChoices([
+      { label: '「やめて……深い……」と懇願する', action: () => {
+        state.arousal += 18;
+        state.reason -= 15;
+        state.sense += 12;
+        state.stamina -= 15;
+        updateBars();
+        if (!checkEnd()) nextStage();
+      }},
+      { label: '声を抑えようと唇を噛む', action: () => {
+        state.arousal += 22;
+        state.reason -= 18;
+        state.sense += 14;
+        state.stamina -= 10;
+        updateBars();
+        if (!checkEnd()) nextStage();
+      }},
+      { label: '腰を自ら合わせ始めてしまう', action: () => {
+        state.arousal += 30;
+        state.reason -= 25;
+        state.sense += 18;
+        updateBars();
+        if (!checkEnd()) nextStage();
+      }}
+    ]);
+  },
+
+  // 5: 追い込み
+  () => {
+    setNarrative('Lの動きが速く、深くなっていく。\n乳首を口に含み、舌で転がしながら、下では容赦なく子宮を突く。\n\n<span class="sfx">ぱんっ♡ ぐちゅっ♡ ぱんっ♡♡</span>\n\n「イキそうですか？ ……まだ、許しません。もう少し、私の中で我慢してください。」');
+    setDialogue(rand(lines.climax));
+    setChoices([
+      { label: '限界まで耐える', action: () => {
+        state.arousal += 20;
+        state.reason -= 20;
+        state.sense += 15;
+        state.stamina -= 20;
+        updateBars();
+        if (!checkEnd()) nextStage();
+      }},
+      { label: 'そのまま絶頂してしまう', action: () => {
+        state.arousal = 100;
+        state.reason -= 30;
+        state.sense += 20;
+        state.stamina -= 25;
+        updateBars();
+        if (!checkEnd()) nextStage();
+      }}
+    ]);
+  },
+
+  // 6: 中出し＆余韻
+  () => {
+    setNarrative('Lの腰が深く沈み、熱いものが子宮に直接注がれる。\n\n<span class="sfx">どくっ……どくっ♡ 熱い……中に……</span>\n\n彼は抜きもせず、そのまま貴女を抱きしめたまま、静かに息を整える。\n\n「……全部、受け止めましたね。よくできました。」');
+    setDialogue(rand(lines.after));
+    setChoices([
+      { label: '力なく彼に寄りかかる', action: () => {
+        state.arousal = Math.min(100, state.arousal + 5);
+        state.reason = Math.max(0, state.reason - 10);
+        updateBars();
+        endGame('愛に沈む', '理性も体力も、ほとんど残っていない。\n\nLは貴女の髪を優しく撫でながら、耳元で低く囁く。\n\n「……私は、貴女を壊すためではなく、私だけのものにするために、今夜を使いました。\nこれからも、何度でも。……いいですね、舞子。」');
+      }},
+      { label: '「……もっと」と小さく呟く', action: () => {
+        state.arousal = 100;
+        state.reason = Math.max(0, state.reason - 15);
+        state.sense += 10;
+        updateBars();
+        endGame('更なる支配', 'その一言で、Lの目が僅かに細められる。\n\n「……わかりました。では、まだ終わらせません。」\n\n再び動き始めた彼の腰に、舞子の身体は完全に屈服していた。');
+      }}
+    ]);
+  }
+];
+
+function nextStage() {
+  state.stage++;
+  if (state.stage >= stages.length) {
+    endGame('終わり', '夜はまだ長い。……Lはそう言って、再び貴女を抱き寄せた。');
+    return;
+  }
+  stages[state.stage]();
+}
+
+/* 開始 */
+updateBars();
+stages[0]();
+</script>
+</body>
+</html>
