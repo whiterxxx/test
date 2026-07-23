@@ -18,6 +18,7 @@
     --sweet: #e8a0b0;
     --dep: #8b6bb5;
     --danger: #b04a4a;
+    --unlimited: #d4a0c8;
   }
   
   * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -53,7 +54,7 @@
   
   #game {
     width: 100%;
-    max-width: 680px;
+    max-width: 720px;
     background: var(--panel);
     border: 1px solid var(--border);
     border-radius: 3px;
@@ -117,6 +118,7 @@
   #mode-display.sweet span.mode-name { color: var(--sweet); }
   #mode-display.interrogate span.mode-name { color: #7a9ac9; }
   #mode-display.training span.mode-name { color: #c98b6b; }
+  #mode-display.unlimited span.mode-name { color: var(--unlimited); text-shadow: 0 0 8px rgba(212,160,200,0.4); }
   
   #combo-display {
     font-size: 0.72rem;
@@ -125,10 +127,19 @@
   
   #combo-display.active { color: var(--lewd); }
   
+  #flags {
+    font-size: 0.68rem;
+    color: var(--muted);
+    padding: 4px 16px;
+    background: #0a0a0e;
+    border-bottom: 1px solid var(--border);
+    min-height: 22px;
+  }
+  
   #scene {
     padding: 20px 18px;
-    min-height: 300px;
-    max-height: 380px;
+    min-height: 320px;
+    max-height: 420px;
     overflow-y: auto;
     font-size: 0.92rem;
   }
@@ -177,6 +188,15 @@
     font-size: 0.9rem;
   }
   
+  #scene .unlimited-note {
+    color: var(--unlimited);
+    font-size: 0.78rem;
+    margin-top: 12px;
+    padding: 8px 12px;
+    background: rgba(212,160,200,0.08);
+    border-radius: 2px;
+  }
+  
   #actions {
     display: grid;
     grid-template-columns: 1fr 1fr;
@@ -189,9 +209,9 @@
     background: #14141c;
     border: none;
     color: var(--text);
-    padding: 13px 10px;
+    padding: 12px 8px;
     font-family: inherit;
-    font-size: 0.82rem;
+    font-size: 0.8rem;
     cursor: pointer;
     transition: background 0.18s, color 0.18s;
     position: relative;
@@ -210,10 +230,13 @@
   #actions button.sweet-btn { color: var(--sweet); }
   #actions button.dote-btn { color: #d4b08c; }
   #actions button.item-btn { color: #a0c4e8; }
+  #actions button.nipple-btn { color: #e8b0c0; }
+  #actions button.bondage-btn { color: #c0a0e8; }
+  #actions button.unlimited-btn { color: var(--unlimited); }
   
   #actions button .hint {
     display: block;
-    font-size: 0.65rem;
+    font-size: 0.62rem;
     color: var(--muted);
     margin-top: 2px;
   }
@@ -265,15 +288,16 @@
 </head>
 <body>
   <h1>Lと舞子</h1>
-  <div class="subtitle">PRIVATE DEATH NOTE ― ENHANCED</div>
+  <div class="subtitle">PRIVATE DEATH NOTE ― FULL VOLUME</div>
   
   <div id="game">
     <div id="start-screen">
-      <p>これは、私と貴女だけの、より深く、より長く続く記録です。</p>
-      <p>淫乱度・体力・依存度の三つのパラメータが連動し、<br>行動の積み重ねが次の展開を変えます。</p>
+      <p>これは、私と貴女だけの、より深く、より多様に犯し、可愛がる記録です。</p>
+      <p>乳首責め、拘束、体位の変化、連続調教……<br>選択肢を重ねるほど、私は貴女を知り、育てていきます。</p>
       <p style="font-size:0.8rem;margin-top:18px;color:#a09080;">
-        尋問 → 調教 → そして変態雌スイーツ。<br>
-        依存度が高まるほど、私は貴女を「可愛がる」ようになります。
+        淫乱度と依存度が共に上限に達したとき、<br>
+        「無制限調教モード」が解禁されます。<br>
+        そこでは、私はもう止まらない。
       </p>
       <button id="start-btn">記録を開始する</button>
     </div>
@@ -308,6 +332,8 @@
         <div id="combo-display">連続：0</div>
       </div>
       
+      <div id="flags"></div>
+      
       <div id="scene"></div>
       
       <div id="actions"></div>
@@ -329,23 +355,26 @@ const state = {
   dep: 0,
   mode: 'normal',
   inserted: false,
+  restrained: false,
   climaxCount: 0,
   combo: 0,
-  sweets: 2,
-  turn: 0
+  sweets: 3,
+  turn: 0,
+  nipplePlayed: false
 };
 
 const modeNames = {
   normal: '通常',
   interrogate: '尋問モード',
   training: '調教モード',
-  sweet: '変態雌スイーツモード'
+  sweet: '変態雌スイーツモード',
+  unlimited: '無制限調教モード'
 };
 
 const scenes = {
   start: {
     narration: '薄暗い部屋。机の上にはまだ半分残ったイチゴのショートケーキ。私はソファに座り、貴女をじっと見つめています。',
-    l: '……始めましょう、舞子。\n今日は、ただ犯すだけではありません。\n貴女が私にどれだけ依存していくか、私自身が観察し、そして育てていきます。\n抵抗は、必要ありません。'
+    l: '……始めましょう、舞子。\n今日は、ただ犯すだけではありません。\n乳首も、拘束も、様々な体位も……すべて使って、貴女を私色に染め上げます。\n抵抗は、必要ありません。'
   },
   
   interrogate: [
@@ -365,6 +394,10 @@ const scenes = {
     {
       narration: '首輪のように指を首筋に這わせ、ゆっくりと締め付ける。',
       l: '呼吸が浅くなっていますね。\nそれでも、貴女の瞳は私から逸れない。\n……可愛いですよ、舞子。'
+    },
+    {
+      narration: '両手首を片手で掴み、頭上に押し上げたまま、もう片方の手で胸をまさぐる。',
+      l: '動けませんね。\nこの状態で、私に何をされても受け入れられるのですか？\n……正直に、答えてください。'
     }
   ],
   
@@ -375,11 +408,6 @@ const scenes = {
       sfx: 'くちゅ……'
     },
     {
-      narration: '乳首を指の腹で転がし、軽く摘まむ。',
-      l: 'ここが、こんなに硬くなっている。\n舞子は、私に触られるのが好きなのですね。\n……もっと強くしてもいいですか？',
-      maiko: 'ぁ……んっ……'
-    },
-    {
       narration: '太腿の内側をゆっくりと撫で上げ、秘部のすぐ手前で止める。',
       l: 'まだ入れていませんよ。\nそれなのに、すでに愛液が腿を伝っています。\n……恥ずかしいとは思いませんか？　私は、その姿が好きです。'
     },
@@ -387,6 +415,71 @@ const scenes = {
       narration: '下着の上から、クリトリスを指先で優しく、しかし執拗に刺激する。',
       l: 'ほら。ここを責められると、すぐに声が出てしまいますね。\nもっと大きく鳴いてください。私だけに聞かせて。\n……良い子です。',
       sfx: 'ぬちゅっ……くちゅくちゅ……'
+    },
+    {
+      narration: '愛液を指に絡め取り、そのまま唇に運び、味わう。',
+      l: '……甘い。\n舞子の味は、私の好物のどれよりも好きです。\nもっと出してくれますか？'
+    }
+  ],
+  
+  nipple: [
+    {
+      narration: 'ブラをずり上げ、両乳首を同時に指で摘まむ。',
+      l: 'ここが、すぐに硬くなりますね。\n乳首を責められるだけで、腰がくねってしまう……。\n舞子は、乳首が特に弱いのですか？',
+      sfx: 'んっ……くぅっ……',
+      maiko: 'や……んあっ……'
+    },
+    {
+      narration: '片方の乳首を唇で吸い上げ、歯で軽く噛み、もう片方を指で転がす。',
+      l: '吸われると、すぐに声が出ますね。\nもっと強くしてもいいですか？　ここを执拗に虐められると、どうなるか……試してみましょう。',
+      sfx: 'ちゅっ……んむっ……れろ……',
+      maiko: 'ひぁっ♡　乳首っ……だめっ……'
+    },
+    {
+      narration: '挿入したまま、上半身を起こし、両乳首を強く摘まみながら腰を動かす。',
+      l: '中を突かれながら、乳首も同時に責められる。\n舞子の身体が、びくびくと跳ねていますね。\n……両方でイかせてあげます。',
+      sfx: 'ぱんっ♡　ちゅっ♡　ぱんっ♡',
+      maiko: 'あひぃっ♡♡　両方っ……だめぇっ♡'
+    },
+    {
+      narration: '拘束した状態で、乳首にクリップのような感覚で指を強く留める。',
+      l: '逃げられませんよ。\nこの痛みと快感が混ざった感覚……舞子は、嫌いではないはずです。\n正直に、感じてください。',
+      maiko: 'っ……あぐっ……L……'
+    },
+    {
+      narration: '射精の直後、敏感になった乳首を舌で丁寧に舐め上げる。',
+      l: 'イったあとの乳首は、特に敏感ですね。\n……可愛い。こんなに小さく震えて。\n私は、この姿が好きです。',
+      dote: true
+    }
+  ],
+  
+  bondage: [
+    {
+      narration: 'ネクタイで両手首をベッドのヘッドボードに結ぶ。',
+      l: '動かないでください。\nこの状態で、私は好きなように貴女を弄び、犯します。\n……抵抗できないことが、かえって興奮するのですか？',
+      maiko: '……L……'
+    },
+    {
+      narration: '両足首も固定し、完全に開脚させたまま、私はゆっくりと跪く。',
+      l: 'すべてが見えます。\n濡れた秘部も、硬くなった乳首も。\n舞子は、私に見せつけるために生まれてきたようです。',
+      sfx: 'くちゅ……'
+    },
+    {
+      narration: '拘束したまま、一気に根元まで挿入し、動かさずただ締め付けを味わう。',
+      l: '逃げられない中で、私のものを受け入れている。\n……この無力感が、舞子をさらに濡らしていますね。\n正直で、良い子です。',
+      sfx: 'ずぶっ♡',
+      maiko: 'あぁっ♡　動けない……'
+    },
+    {
+      narration: '手首を頭上で固定したまま、激しく腰を打ち付ける。',
+      l: '拘束されたまま、奥を抉られる感覚はどうですか？\n声を我慢しなくていい。私だけに、聞かせてください。',
+      sfx: 'ぱんっ♡　ずちゅっ♡　ぱんぱんっ♡♡',
+      maiko: 'ひぁあっ♡♡　逃げられないっ……！'
+    },
+    {
+      narration: '完全に拘束した状態で、顔を近づけ、優しく髪を撫でる。',
+      l: '動けなくても、大丈夫です。\n私はここにいます。\n……この状態の舞子を、私はとても愛おしく思います。',
+      dote: true
     }
   ],
   
@@ -400,6 +493,11 @@ const scenes = {
       narration: '息が上がるまで深く吸い、舌を絡め、喉の奥まで味わう。',
       l: 'もっと開けてください。\n私の舌が、貴女の喉の奥を犯しているのを感じて。\n……ん、甘い。貴女のすべてが、私のものだということを、身体に教えてあげます。',
       maiko: 'んむっ……ぷはっ……L……'
+    },
+    {
+      narration: '挿入したまま、激しく口づけを重ね、息を奪う。',
+      l: '中を突かれながら、口も犯される。\n舞子の意識が、少しずつ溶けていくのがわかります。\n……その顔が、好きです。',
+      sfx: 'ちゅるっ……ぱんっ♡　れろっ……'
     }
   ],
   
@@ -413,6 +511,11 @@ const scenes = {
       narration: '一気に根元まで埋める。熱い肉壁が締め付けてくる。',
       l: '……っ。\n中が、私を締め付けて……熱い。\n舞子の中は、いつでも私を待っていたのですね。\n動かないでください。今は、私の形を、貴女の中に刻み込む時間です。',
       maiko: 'あぁっ♡　L……入ってる……'
+    },
+    {
+      narration: '拘束した状態で、ゆっくりと沈めていく。',
+      l: '逃げられない中で、私のものが入っていく感覚を、しっかり味わってください。\n……全部、入るまで止めません。',
+      sfx: 'ぬちゅっ……ずずっ♡'
     }
   ],
   
@@ -434,9 +537,15 @@ const scenes = {
       sfx: 'ぱんぱんぱんっ♡♡　ぬちゅぬちゅっ♡'
     },
     {
-      narration: '汗だくの身体を押し倒し、耳元で低く囁きながら腰を振る。',
-      l: '私のものを、もっと奥で締め付けてください。\n舞子の中は、私にしか開かないようにしてあげます。',
-      sfx: 'ずちゅっ♡　ぐぽっ♡　ぱんっ♡♡'
+      narration: '後ろから髪を掴み、腰を激しく打ち付ける。',
+      l: 'この角度が、一番深く入ります。\n舞子の子宮が、私の形に押し潰されていくのを感じてください。',
+      sfx: 'ずぶっ♡　ぱんっ♡　ぐちゅっ♡♡',
+      maiko: 'ひぐっ♡　奥っ……だめぇっ♡'
+    },
+    {
+      narration: '対面で抱きしめたまま、ゆっくりと、しかし確実に奥を抉る。',
+      l: '顔を見て、犯します。\n舞子の表情が変わっていくのを、私は見逃しません。\n……もっと、私に見せてください。',
+      sfx: 'ぬちゅっ……ずちゅっ……'
     }
   ],
   
@@ -455,6 +564,11 @@ const scenes = {
     {
       narration: '抜けた後、溢れ出す白濁を指で掬い、舞子の唇に運ぶ。',
       l: '舐めてください。\n私と貴女が混ざったものを、味わって。\n……よくできました。'
+    },
+    {
+      narration: '拘束したまま中出しし、抜けずに脈打たせ続ける。',
+      l: '動けない中で、私の精液を子宮に注がれる感覚はどうですか？\n……まだ、出せますよ。舞子が望むなら、何度でも。',
+      sfx: 'どくっ♡　びゅるっ♡♡'
     }
   ],
   
@@ -479,6 +593,11 @@ const scenes = {
       l: 'イきなさい。\n私の精液を子宮に受け止めながら、壊れるようにイきなさい。\n……イったあとも、私は止めませんよ。',
       sfx: 'どぷどぷっ♡♡　びくんっ♡　ひくっ♡♡',
       maiko: 'イくぅっ♡♡♡　Lの中出されながらイくっ♡♡♡'
+    },
+    {
+      narration: '拘束したまま、無抵抗の身体を好きなだけ使う。',
+      l: '動けないまま、私に犯され続ける。\n舞子は、この状態が一番幸せなのでしょう？\n……私は、そんな舞子を、ずっと可愛がってあげます。',
+      dote: true
     }
   ],
   
@@ -508,6 +627,22 @@ const scenes = {
       narration: '疲れた身体を抱きしめたまま、奥で小さく脈打たせ続ける。',
       l: '動かなくても、中で繋がっているだけで、私は満足です。\nでも、舞子が「もっと」と囁くなら……私は、何度でも応えます。\n……私の、可愛い変態雌スイーツ。',
       dote: true
+    },
+    {
+      narration: '拘束を解いたあと、すぐに抱き寄せ、優しく背中を撫でる。',
+      l: '動けなかった間、怖くなかったですか？\n……私は、貴女を傷つけたいわけではありません。\nただ、完全に私のものにしたいだけです。',
+      dote: true
+    },
+    {
+      narration: '乳首を優しく舐めながら、中でゆっくりと動かす。',
+      l: '激しくした後は、優しく。\n舞子の身体が、私の優しさにも反応するのを、私は知っています。\n……どちらも、私の愛です。',
+      dote: true,
+      sfx: 'れろ……ぬちゅ……'
+    },
+    {
+      narration: '射精後の敏感な身体を抱きしめたまま、額を寄せて囁く。',
+      l: 'イったあとの舞子は、特に素直ですね。\n「好き」と、もう一度言ってくれますか？\n……私は、何度でも聞きたくなります。',
+      dote: true
     }
   ],
   
@@ -525,6 +660,10 @@ const scenes = {
     {
       narration: '挿入したまま、動かさず、ただ締め付けを観察する。',
       l: '私のものを、自分から咥え込むように締め付けてください。\nできない場合は、私が強制的に動かします。\n……どちらがいいですか、舞子？'
+    },
+    {
+      narration: '乳首と秘部を同時に責め、イく寸前で止める。',
+      l: 'イかせてほしくば、自分から「お願いします」と言ってください。\n……素直になれば、私はいくらでも応えます。'
     }
   ],
   
@@ -538,6 +677,45 @@ const scenes = {
       narration: 'クリームを指に取り、舞子の唇に塗りつける。',
       l: '自分で舐め取ってください。\n私の指を、丁寧に。\n……良い子です。こんなに素直に従うなんて、本当に可愛い。',
       system: '体力が回復し、依存度がわずかに上昇しました。'
+    },
+    {
+      narration: '挿入したまま、ケーキを口に運び、溶けた甘さを共有する。',
+      l: '中で繋がりながら、甘いものを分け合う。\n……この瞬間が、私は好きです。舞子も、そうでしょう？',
+      system: '体力が回復し、依存度が上昇しました。',
+      dote: true
+    }
+  ],
+  
+  unlimited: [
+    {
+      narration: '淫乱度も依存度も、すでに上限を超えている。私は、もう何も遠慮しない。',
+      l: '無制限調教モードに入ります。\nここからは、体力が尽きても、私は止めません。\n舞子が「もう限界です」と泣きながら懇願しても、私は続けます。\n……それが、私の愛の形です。',
+      unlimited: true
+    },
+    {
+      narration: '拘束したまま、何度も中出しを繰り返し、溢れかえる白濁でシーツを汚す。',
+      l: '数えきれないほど、出しています。\n舞子の中は、もう私の精液で満たされて……外にまで溢れ出していますね。\n……それでも、まだ足りますか？',
+      sfx: 'どぷっ♡　びゅるるっ♡♡　くちゅっ♡',
+      maiko: 'もう……出ないっ……あひぃっ♡♡',
+      unlimited: true
+    },
+    {
+      narration: '乳首を执拗に責めながら、奥を容赦なく抉り続ける。',
+      l: 'イっても、イっても、止めません。\n舞子の身体が、私の調教に完全に適応するまで。\n……可愛い。こんなに壊れても、まだ私を求めている。',
+      sfx: 'ぱんっ♡　ちゅっ♡　ぱんぱんっ♡♡',
+      unlimited: true
+    },
+    {
+      narration: '完全に脱力した身体を抱き上げ、対面でゆっくりと沈めていく。',
+      l: '動けなくても、大丈夫です。\n私が、すべて動かします。\n……舞子は、ただ私に犯されていればいい。それが、一番幸せな形です。',
+      dote: true,
+      unlimited: true
+    },
+    {
+      narration: '無制限の時間の中で、私は舞子のすべてを味わい尽くす。',
+      l: '乳首も、喉も、子宮も、すべて私のものです。\n依存度が上限に達した今、舞子はもう、私なしでは生きられない。\n……それでいい。私は、貴女を永遠に可愛がります。',
+      dote: true,
+      unlimited: true
     }
   ]
 };
@@ -564,6 +742,7 @@ function updateUI() {
   if (state.mode === 'sweet') modeEl.classList.add('sweet');
   if (state.mode === 'interrogate') modeEl.classList.add('interrogate');
   if (state.mode === 'training') modeEl.classList.add('training');
+  if (state.mode === 'unlimited') modeEl.classList.add('unlimited');
   
   const comboEl = document.getElementById('combo-display');
   if (state.combo > 0) {
@@ -573,6 +752,13 @@ function updateUI() {
     comboEl.textContent = '連続：0';
     comboEl.classList.remove('active');
   }
+  
+  let flags = [];
+  if (state.inserted) flags.push('挿入中');
+  if (state.restrained) flags.push('拘束中');
+  if (state.nipplePlayed) flags.push('乳首感度上昇');
+  if (state.mode === 'unlimited') flags.push('無制限');
+  document.getElementById('flags').textContent = flags.length ? flags.join(' ／ ') : '';
   
   renderActions();
 }
@@ -586,18 +772,27 @@ function renderScene(data) {
   if (data.sfx) html += `<div class="sfx">${data.sfx}</div>`;
   if (data.maiko) html += `<div class="maiko-line">「${data.maiko}」</div>`;
   if (data.system) html += `<div class="system">${data.system}</div>`;
+  if (data.unlimited) html += `<div class="unlimited-note">無制限調教モード ― 私は、もう止まらない</div>`;
   el.innerHTML = html;
   el.scrollTop = 0;
 }
 
 function renderActions() {
   const container = document.getElementById('actions');
-  const canAct = state.stamina > 0;
+  const canAct = state.stamina > 0 || state.mode === 'unlimited';
   let html = '';
   
   html += `<button data-act="interrogate" ${!canAct?'disabled':''}>尋問を始める<span class="hint">淫乱+ / 依存+</span></button>`;
-  html += `<button data-act="tease" ${!canAct?'disabled':''}>身体を弄ぶ<span class="hint">淫乱+ / 感度上昇</span></button>`;
-  html += `<button data-act="kiss" ${!canAct?'disabled':''}>深く口づけする<span class="hint">依存を少し上げる</span></button>`;
+  html += `<button data-act="tease" ${!canAct?'disabled':''}>身体を弄ぶ<span class="hint">淫乱+</span></button>`;
+  html += `<button data-act="kiss" ${!canAct?'disabled':''}>深く口づけする<span class="hint">依存+</span></button>`;
+  
+  html += `<button data-act="nipple" class="nipple-btn" ${!canAct?'disabled':''}>乳首を执拗に責める<span class="hint">感度上昇 / 淫乱++</span></button>`;
+  
+  if (!state.restrained) {
+    html += `<button data-act="bondage" class="bondage-btn" ${!canAct?'disabled':''}>拘束する<span class="hint">無力化 / 依存+</span></button>`;
+  } else {
+    html += `<button data-act="release" class="bondage-btn" ${!canAct?'disabled':''}>拘束を解く<span class="hint">自由に戻す</span></button>`;
+  }
   
   if (!state.inserted) {
     html += `<button data-act="insert" ${!canAct?'disabled':''}>挿入する<span class="hint">繋がる</span></button>`;
@@ -610,12 +805,20 @@ function renderActions() {
   if (state.lewd >= 40 && state.mode === 'normal') {
     html += `<button data-act="toTraining" ${!canAct?'disabled':''}>調教を始める<span class="hint">モード移行</span></button>`;
   }
-  if (state.lewd >= 100 && state.mode !== 'sweet') {
+  if (state.lewd >= 100 && state.mode !== 'sweet' && state.mode !== 'unlimited') {
     html += `<button data-act="toSweet" class="sweet-btn">変態雌スイーツへ<span class="hint">完全に堕ちる</span></button>`;
   }
   
-  if ((state.dep >= 30 || state.mode === 'sweet') && state.inserted) {
+  if (state.lewd >= 100 && state.dep >= 100 && state.mode !== 'unlimited') {
+    html += `<button data-act="toUnlimited" class="unlimited-btn">無制限調教モードへ<span class="hint">両方MAXで解禁</span></button>`;
+  }
+  
+  if ((state.dep >= 25 || state.mode === 'sweet' || state.mode === 'unlimited') && state.inserted) {
     html += `<button data-act="dote" class="dote-btn" ${!canAct?'disabled':''}>可愛がる<span class="hint">依存↑ / 体力微回復</span></button>`;
+  }
+  
+  if (state.mode === 'unlimited') {
+    html += `<button data-act="unlimitedAct" class="unlimited-btn">無制限に犯し続ける<span class="hint">止まらない</span></button>`;
   }
   
   if (state.sweets > 0) {
@@ -632,7 +835,7 @@ function renderActions() {
 }
 
 function doAction(act) {
-  if (state.stamina <= 0 && act !== 'reset' && act !== 'toSweet') return;
+  if (state.stamina <= 0 && state.mode !== 'unlimited' && act !== 'reset' && act !== 'toUnlimited' && act !== 'toSweet') return;
   
   let data;
   let lewdGain = 0;
@@ -642,26 +845,56 @@ function doAction(act) {
   
   state.turn++;
   
+  const unlimitedMod = state.mode === 'unlimited' ? 0.35 : 1;
+  
   switch (act) {
     case 'interrogate':
-      state.mode = state.mode === 'sweet' ? 'sweet' : 'interrogate';
+      if (state.mode !== 'sweet' && state.mode !== 'unlimited') state.mode = 'interrogate';
       data = pick(scenes.interrogate);
       lewdGain = 7 + Math.floor(Math.random() * 6);
-      staminaLoss = 4;
+      staminaLoss = 4 * unlimitedMod;
       depGain = 2 + Math.floor(Math.random() * 3);
       break;
       
     case 'tease':
       data = pick(scenes.tease);
       lewdGain = 9 + Math.floor(Math.random() * 7);
-      staminaLoss = 5;
+      staminaLoss = 5 * unlimitedMod;
+      depGain = 1;
+      break;
+      
+    case 'nipple':
+      state.nipplePlayed = true;
+      data = pick(scenes.nipple);
+      lewdGain = 12 + Math.floor(Math.random() * 9);
+      staminaLoss = 6 * unlimitedMod;
+      depGain = 3 + Math.floor(Math.random() * 3);
+      if (state.restrained) lewdGain += 5;
+      break;
+      
+    case 'bondage':
+      state.restrained = true;
+      data = pick(scenes.bondage);
+      lewdGain = 10 + Math.floor(Math.random() * 6);
+      staminaLoss = 5 * unlimitedMod;
+      depGain = 5 + Math.floor(Math.random() * 4);
+      break;
+      
+    case 'release':
+      state.restrained = false;
+      data = {
+        narration: '私は静かに結び目をほどき、舞子の手首を解放する。',
+        l: '……動けますよ。\nただし、逃げようとは思わないでください。\n私は、いつでもまた縛ることができますから。'
+      };
+      lewdGain = 2;
+      staminaLoss = 1;
       depGain = 1;
       break;
       
     case 'kiss':
       data = pick(scenes.kiss);
       lewdGain = 5 + Math.floor(Math.random() * 4);
-      staminaLoss = 2;
+      staminaLoss = 2 * unlimitedMod;
       depGain = 3 + Math.floor(Math.random() * 3);
       break;
       
@@ -669,8 +902,12 @@ function doAction(act) {
       state.inserted = true;
       data = pick(scenes.insert);
       lewdGain = 14 + Math.floor(Math.random() * 8);
-      staminaLoss = 7;
+      staminaLoss = 7 * unlimitedMod;
       depGain = 4;
+      if (state.restrained) {
+        lewdGain += 4;
+        depGain += 3;
+      }
       break;
       
     case 'thrust':
@@ -678,18 +915,22 @@ function doAction(act) {
         state.inserted = true;
         data = pick(scenes.insert);
         lewdGain = 12;
-        staminaLoss = 6;
+        staminaLoss = 6 * unlimitedMod;
         depGain = 3;
       } else {
         state.combo++;
         resetCombo = false;
         data = pick(scenes.thrust);
-        const comboBonus = Math.min(state.combo * 3, 18);
+        const comboBonus = Math.min(state.combo * 3, 20);
         lewdGain = 16 + Math.floor(Math.random() * 10) + comboBonus;
-        staminaLoss = 10 + Math.floor(state.combo * 1.5);
+        staminaLoss = (10 + Math.floor(state.combo * 1.5)) * unlimitedMod;
         depGain = 2 + Math.floor(state.combo / 2);
         
-        if (state.mode === 'sweet' && Math.random() > 0.35) {
+        if (state.restrained) {
+          lewdGain += 6;
+          depGain += 2;
+        }
+        if ((state.mode === 'sweet' || state.mode === 'unlimited') && Math.random() > 0.35) {
           data = pick(scenes.sweet);
         }
       }
@@ -699,12 +940,13 @@ function doAction(act) {
       state.combo++;
       resetCombo = false;
       data = pick(scenes.climax);
-      lewdGain = 22 + Math.floor(Math.random() * 12) + Math.min(state.combo * 2, 12);
-      staminaLoss = 18 + Math.floor(state.combo * 1.2);
+      lewdGain = 22 + Math.floor(Math.random() * 12) + Math.min(state.combo * 2, 14);
+      staminaLoss = (18 + Math.floor(state.combo * 1.2)) * unlimitedMod;
       depGain = 8 + Math.floor(Math.random() * 6) + Math.floor(state.combo / 2);
       state.climaxCount++;
       
-      if (state.mode === 'sweet' && Math.random() > 0.3) {
+      if (state.restrained) depGain += 4;
+      if ((state.mode === 'sweet' || state.mode === 'unlimited') && Math.random() > 0.3) {
         data = pick(scenes.sweet);
       }
       break;
@@ -713,7 +955,7 @@ function doAction(act) {
       state.mode = 'training';
       data = pick(scenes.training);
       lewdGain = 10;
-      staminaLoss = 6;
+      staminaLoss = 6 * unlimitedMod;
       depGain = 5;
       break;
       
@@ -721,16 +963,34 @@ function doAction(act) {
       state.mode = 'sweet';
       data = pick(scenes.sweet);
       lewdGain = 5;
-      staminaLoss = 8;
+      staminaLoss = 8 * unlimitedMod;
       depGain = 12;
+      break;
+      
+    case 'toUnlimited':
+      state.mode = 'unlimited';
+      data = pick(scenes.unlimited);
+      lewdGain = 0;
+      staminaLoss = 0;
+      depGain = 5;
+      break;
+      
+    case 'unlimitedAct':
+      data = pick(scenes.unlimited);
+      lewdGain = 8 + Math.floor(Math.random() * 6);
+      staminaLoss = 4;
+      depGain = 6 + Math.floor(Math.random() * 5);
+      state.combo++;
+      resetCombo = false;
       break;
       
     case 'dote':
       data = pick(scenes.dote);
       lewdGain = 3 + Math.floor(Math.random() * 4);
-      staminaLoss = -4;
+      staminaLoss = -5;
       depGain = 6 + Math.floor(Math.random() * 5);
-      if (state.mode === 'sweet') depGain += 4;
+      if (state.mode === 'sweet' || state.mode === 'unlimited') depGain += 5;
+      if (state.restrained) depGain += 2;
       break;
       
     case 'useSweet':
@@ -738,7 +998,7 @@ function doAction(act) {
       state.sweets--;
       data = pick(scenes.useSweet);
       lewdGain = 2;
-      staminaLoss = -18;
+      staminaLoss = -20;
       depGain = 4 + Math.floor(Math.random() * 3);
       break;
       
@@ -748,33 +1008,33 @@ function doAction(act) {
       state.dep = 0;
       state.mode = 'normal';
       state.inserted = false;
+      state.restrained = false;
       state.climaxCount = 0;
       state.combo = 0;
-      state.sweets = 2;
+      state.sweets = 3;
       state.turn = 0;
+      state.nipplePlayed = false;
       renderScene(scenes.start);
       updateUI();
       return;
   }
   
-  if (state.mode === 'sweet' && act !== 'dote' && act !== 'useSweet' && Math.random() > 0.55) {
-    if (!data.dote) {
-      data.dote = true;
-    }
+  if ((state.mode === 'sweet' || state.mode === 'unlimited') && act !== 'dote' && act !== 'useSweet' && Math.random() > 0.5) {
+    if (!data.dote) data.dote = true;
   }
   
   state.lewd = clamp(state.lewd + lewdGain, 0, 100);
   state.stamina = clamp(state.stamina - staminaLoss, 0, 100);
   state.dep = clamp(state.dep + depGain, 0, 100);
   
-  if (resetCombo && act !== 'thrust' && act !== 'climax') {
+  if (resetCombo && act !== 'thrust' && act !== 'climax' && act !== 'unlimitedAct') {
     state.combo = 0;
   }
   
   renderScene(data);
   updateUI();
   
-  if (state.stamina <= 0) {
+  if (state.stamina <= 0 && state.mode !== 'unlimited') {
     setTimeout(() => {
       const extra = document.createElement('div');
       extra.className = 'narration';
@@ -784,11 +1044,11 @@ function doAction(act) {
     }, 500);
   }
   
-  if (state.dep >= 100 && act === 'dote') {
+  if (state.dep >= 100 && state.lewd >= 100 && act === 'dote') {
     setTimeout(() => {
       const extra = document.createElement('div');
       extra.className = 'dote';
-      extra.innerHTML = '（依存度が上限に達しました。私は、もう貴女を誰にも渡しません。これは、二人だけの永遠の記録です）';
+      extra.innerHTML = '（淫乱度・依存度ともに上限。私は、もう貴女を誰にも渡しません。無制限調教の準備が整いました）';
       document.getElementById('scene').appendChild(extra);
     }, 700);
   }
