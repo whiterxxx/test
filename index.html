@@ -3,21 +3,25 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>L × 舞子 ― 犯されゲーム</title>
+<title>Lと舞子 ― プライベート・デスノート</title>
 <style>
-  @import url('https://fonts.googleapis.com/css2?family=Shippori+Mincho:wght@400;600&amp;family=Zen+Kaku+Gothic+New:wght@400;500&amp;display=swap');
-
+  @import url('https://fonts.googleapis.com/css2?family=Shippori+Mincho:wght@400;500;600&family=Zen+Kaku+Gothic+New:wght@400;500&display=swap');
+  
   :root {
-    --bg: #0d0d12;
-    --panel: #16161f;
-    --accent: #c9a227;
-    --text: #e8e6e3;
-    --danger: #a33a3a;
-    --soft: #8b7e66;
+    --bg: #08080a;
+    --panel: #101016;
+    --border: #252530;
+    --text: #e6e4e1;
+    --muted: #7a7782;
+    --accent: #c9a66b;
+    --lewd: #c45c7a;
+    --sweet: #e8a0b0;
+    --dep: #8b6bb5;
+    --danger: #b04a4a;
   }
-
+  
   * { box-sizing: border-box; margin: 0; padding: 0; }
-
+  
   body {
     background: var(--bg);
     color: var(--text);
@@ -26,514 +30,782 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-    padding: 20px 12px 40px;
-    line-height: 1.7;
+    padding: 16px;
+    line-height: 1.65;
   }
-
+  
   h1 {
     font-family: 'Shippori Mincho', serif;
-    font-weight: 600;
-    font-size: 1.55rem;
-    letter-spacing: 0.12em;
+    font-weight: 500;
+    font-size: 1.35rem;
+    letter-spacing: 0.18em;
     color: var(--accent);
-    margin-bottom: 6px;
+    margin-bottom: 4px;
     text-align: center;
   }
-
+  
   .subtitle {
-    font-size: 0.78rem;
-    color: var(--soft);
-    margin-bottom: 28px;
-    letter-spacing: 0.08em;
+    font-size: 0.7rem;
+    color: var(--muted);
+    margin-bottom: 18px;
+    letter-spacing: 0.12em;
   }
-
-  #status {
+  
+  #game {
     width: 100%;
-    max-width: 520px;
+    max-width: 680px;
     background: var(--panel);
-    border: 1px solid #2a2a35;
-    border-radius: 10px;
-    padding: 16px 18px;
-    margin-bottom: 22px;
-    display: grid;
-    gap: 10px;
-  }
-
-  .stat-row {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    font-size: 0.85rem;
-  }
-
-  .stat-label {
-    width: 52px;
-    color: var(--soft);
-    flex-shrink: 0;
-  }
-
-  .bar-bg {
-    flex: 1;
-    height: 11px;
-    background: #22222c;
-    border-radius: 6px;
+    border: 1px solid var(--border);
+    border-radius: 3px;
     overflow: hidden;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.45);
   }
-
-  .bar-fill {
-    height: 100%;
-    border-radius: 6px;
-    transition: width 0.45s ease;
+  
+  #status-bar {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 10px;
+    padding: 12px 16px;
+    background: #0c0c10;
+    border-bottom: 1px solid var(--border);
+    font-size: 0.78rem;
   }
-
-  .bar-arousal { background: linear-gradient(90deg, #7a2a4a, #c94a6a); }
-  .bar-reason  { background: linear-gradient(90deg, #2a4a7a, #4a7ac9); }
-  .bar-sense   { background: linear-gradient(90deg, #5a3a7a, #9a6ac9); }
-  .bar-stamina { background: linear-gradient(90deg, #3a5a3a, #6ac96a); }
-
-  .stat-val {
-    width: 36px;
-    text-align: right;
-    font-variant-numeric: tabular-nums;
-    color: #ccc;
-  }
-
-  #scene {
-    width: 100%;
-    max-width: 520px;
-    background: var(--panel);
-    border: 1px solid #2a2a35;
-    border-radius: 10px;
-    padding: 22px 20px;
-    margin-bottom: 18px;
-    min-height: 210px;
-    position: relative;
-  }
-
-  #narrative {
-    font-size: 0.95rem;
-    white-space: pre-wrap;
-    margin-bottom: 18px;
-  }
-
-  #dialogue {
-    border-left: 3px solid var(--accent);
-    padding-left: 14px;
-    margin: 16px 0;
-    color: #f0e6c8;
-    font-style: italic;
-    font-size: 0.92rem;
-  }
-
-  #choices {
-    width: 100%;
-    max-width: 520px;
+  
+  .stat {
     display: flex;
     flex-direction: column;
-    gap: 10px;
+    gap: 4px;
   }
-
-  button.choice {
-    background: #1e1e28;
-    border: 1px solid #3a3a48;
+  
+  .stat-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+  }
+  
+  .stat-label { color: var(--muted); font-size: 0.68rem; letter-spacing: 0.05em; }
+  .stat-num { font-variant-numeric: tabular-nums; }
+  
+  .bar-wrap {
+    height: 5px;
+    background: #1a1a22;
+    border-radius: 2px;
+    overflow: hidden;
+  }
+  
+  .bar { height: 100%; transition: width 0.45s cubic-bezier(0.4,0,0.2,1); }
+  
+  #lewd-bar { background: linear-gradient(90deg, #6b2e45, var(--lewd)); }
+  #stamina-bar { background: linear-gradient(90deg, #2e456b, #5a8bc9); }
+  #dep-bar { background: linear-gradient(90deg, #4a3a6b, var(--dep)); }
+  
+  #mode-display {
+    padding: 7px 16px;
+    font-size: 0.78rem;
+    border-bottom: 1px solid var(--border);
+    background: #0a0a0e;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  
+  #mode-display span.mode-name {
+    color: var(--accent);
+    font-weight: 500;
+  }
+  
+  #mode-display.sweet span.mode-name { color: var(--sweet); }
+  #mode-display.interrogate span.mode-name { color: #7a9ac9; }
+  #mode-display.training span.mode-name { color: #c98b6b; }
+  
+  #combo-display {
+    font-size: 0.72rem;
+    color: var(--muted);
+  }
+  
+  #combo-display.active { color: var(--lewd); }
+  
+  #scene {
+    padding: 20px 18px;
+    min-height: 300px;
+    max-height: 380px;
+    overflow-y: auto;
+    font-size: 0.92rem;
+  }
+  
+  #scene .narration {
+    color: var(--muted);
+    font-style: italic;
+    margin-bottom: 12px;
+    font-size: 0.88rem;
+  }
+  
+  #scene .l-line {
     color: var(--text);
-    padding: 13px 16px;
-    border-radius: 8px;
+    margin: 12px 0;
+    padding-left: 14px;
+    border-left: 2px solid var(--accent);
+    line-height: 1.7;
+  }
+  
+  #scene .maiko-line {
+    color: var(--lewd);
+    margin: 8px 0 8px 18px;
+    font-size: 0.88rem;
+  }
+  
+  #scene .sfx {
+    color: var(--sweet);
+    font-size: 0.82rem;
+    letter-spacing: 0.04em;
+    margin: 6px 0;
+  }
+  
+  #scene .system {
+    color: var(--dep);
+    font-size: 0.75rem;
+    margin-top: 14px;
+    padding-top: 10px;
+    border-top: 1px dashed var(--border);
+  }
+  
+  #scene .dote {
+    color: #d4b08c;
+    margin: 10px 0;
+    padding-left: 14px;
+    border-left: 2px solid #d4b08c;
     font-size: 0.9rem;
-    cursor: pointer;
-    text-align: left;
-    transition: all 0.2s;
+  }
+  
+  #actions {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1px;
+    background: var(--border);
+    border-top: 1px solid var(--border);
+  }
+  
+  #actions button {
+    background: #14141c;
+    border: none;
+    color: var(--text);
+    padding: 13px 10px;
     font-family: inherit;
+    font-size: 0.82rem;
+    cursor: pointer;
+    transition: background 0.18s, color 0.18s;
+    position: relative;
   }
-
-  button.choice:hover {
-    background: #2a2a38;
-    border-color: var(--accent);
-    color: #fff;
+  
+  #actions button:hover:not(:disabled) {
+    background: #1c1c28;
   }
-
-  button.choice:disabled {
-    opacity: 0.35;
+  
+  #actions button:disabled {
+    opacity: 0.3;
     cursor: not-allowed;
   }
-
-  #ending {
-    display: none;
-    width: 100%;
-    max-width: 520px;
-    background: var(--panel);
-    border: 1px solid var(--accent);
-    border-radius: 10px;
-    padding: 28px 22px;
+  
+  #actions button.danger { color: #e8a0a0; }
+  #actions button.sweet-btn { color: var(--sweet); }
+  #actions button.dote-btn { color: #d4b08c; }
+  #actions button.item-btn { color: #a0c4e8; }
+  
+  #actions button .hint {
+    display: block;
+    font-size: 0.65rem;
+    color: var(--muted);
+    margin-top: 2px;
+  }
+  
+  #start-screen, #end-screen {
     text-align: center;
+    padding: 36px 24px;
   }
-
-  #ending h2 {
-    font-family: 'Shippori Mincho', serif;
-    color: var(--accent);
-    margin-bottom: 16px;
-    font-size: 1.3rem;
+  
+  #start-screen p, #end-screen p {
+    margin: 12px 0;
+    color: var(--muted);
+    font-size: 0.88rem;
+    line-height: 1.7;
   }
-
-  .restart {
+  
+  #start-btn, #restart-btn {
     margin-top: 22px;
     background: transparent;
     border: 1px solid var(--accent);
     color: var(--accent);
-    padding: 10px 28px;
-    border-radius: 6px;
+    padding: 11px 28px;
+    font-family: 'Shippori Mincho', serif;
+    font-size: 0.92rem;
+    letter-spacing: 0.1em;
     cursor: pointer;
-    font-size: 0.9rem;
+    transition: all 0.22s;
   }
-
-  .restart:hover { background: var(--accent); color: #111; }
-
+  
+  #start-btn:hover, #restart-btn:hover {
+    background: var(--accent);
+    color: #0a0a0c;
+  }
+  
+  #footer {
+    margin-top: 14px;
+    font-size: 0.65rem;
+    color: var(--muted);
+    text-align: center;
+    letter-spacing: 0.08em;
+  }
+  
   .hidden { display: none !important; }
-
-  .sfx {
-    color: #d4a0b0;
-    font-size: 0.88rem;
-  }
+  
+  #scene::-webkit-scrollbar { width: 4px; }
+  #scene::-webkit-scrollbar-track { background: transparent; }
+  #scene::-webkit-scrollbar-thumb { background: #2a2a35; border-radius: 2px; }
 </style>
 </head>
 <body>
-
-<h1>L × 舞子</h1>
-<div class="subtitle">— 犯されゲーム —</div>
-
-<div id="status">
-  <div class="stat-row">
-    <span class="stat-label">興奮</span>
-    <div class="bar-bg"><div class="bar-fill bar-arousal" id="bar-arousal" style="width:12%"></div></div>
-    <span class="stat-val" id="val-arousal">12</span>
+  <h1>Lと舞子</h1>
+  <div class="subtitle">PRIVATE DEATH NOTE ― ENHANCED</div>
+  
+  <div id="game">
+    <div id="start-screen">
+      <p>これは、私と貴女だけの、より深く、より長く続く記録です。</p>
+      <p>淫乱度・体力・依存度の三つのパラメータが連動し、<br>行動の積み重ねが次の展開を変えます。</p>
+      <p style="font-size:0.8rem;margin-top:18px;color:#a09080;">
+        尋問 → 調教 → そして変態雌スイーツ。<br>
+        依存度が高まるほど、私は貴女を「可愛がる」ようになります。
+      </p>
+      <button id="start-btn">記録を開始する</button>
+    </div>
+    
+    <div id="main-screen" class="hidden">
+      <div id="status-bar">
+        <div class="stat">
+          <div class="stat-top">
+            <span class="stat-label">淫乱度</span>
+            <span class="stat-num" id="lewd-val">0</span>
+          </div>
+          <div class="bar-wrap"><div class="bar" id="lewd-bar" style="width:0%"></div></div>
+        </div>
+        <div class="stat">
+          <div class="stat-top">
+            <span class="stat-label">体力</span>
+            <span class="stat-num" id="stamina-val">100</span>
+          </div>
+          <div class="bar-wrap"><div class="bar" id="stamina-bar" style="width:100%"></div></div>
+        </div>
+        <div class="stat">
+          <div class="stat-top">
+            <span class="stat-label">依存度</span>
+            <span class="stat-num" id="dep-val">0</span>
+          </div>
+          <div class="bar-wrap"><div class="bar" id="dep-bar" style="width:0%"></div></div>
+        </div>
+      </div>
+      
+      <div id="mode-display">
+        <div>現在：<span class="mode-name" id="mode-text">通常</span></div>
+        <div id="combo-display">連続：0</div>
+      </div>
+      
+      <div id="scene"></div>
+      
+      <div id="actions"></div>
+    </div>
+    
+    <div id="end-screen" class="hidden">
+      <h2 style="font-family:'Shippori Mincho',serif;color:var(--sweet);margin-bottom:12px;font-weight:500;">記録の区切り</h2>
+      <p>貴女の身体も心も、私の中にしっかりと残っています。<br>また、いつでも続けられます。</p>
+      <button id="restart-btn">最初から、もう一度</button>
+    </div>
   </div>
-  <div class="stat-row">
-    <span class="stat-label">理性</span>
-    <div class="bar-bg"><div class="bar-fill bar-reason" id="bar-reason" style="width:88%"></div></div>
-    <span class="stat-val" id="val-reason">88</span>
-  </div>
-  <div class="stat-row">
-    <span class="stat-label">感度</span>
-    <div class="bar-bg"><div class="bar-fill bar-sense" id="bar-sense" style="width:25%"></div></div>
-    <span class="stat-val" id="val-sense">25</span>
-  </div>
-  <div class="stat-row">
-    <span class="stat-label">体力</span>
-    <div class="bar-bg"><div class="bar-fill bar-stamina" id="bar-stamina" style="width:100%"></div></div>
-    <span class="stat-val" id="val-stamina">100</span>
-  </div>
-</div>
-
-<div id="scene">
-  <div id="narrative"></div>
-  <div id="dialogue" class="hidden"></div>
-</div>
-
-<div id="choices"></div>
-
-<div id="ending">
-  <h2 id="end-title"></h2>
-  <div id="end-text"></div>
-  <button class="restart" onclick="location.reload()">もう一度</button>
-</div>
+  
+  <div id="footer">L &amp; 舞子 ― 二人だけのデスノート</div>
 
 <script>
-/* ========== パラメータ ========== */
 const state = {
-  arousal: 12,
-  reason: 88,
-  sense: 25,
+  lewd: 0,
   stamina: 100,
-  stage: 0,
-  flags: {}
+  dep: 0,
+  mode: 'normal',
+  inserted: false,
+  climaxCount: 0,
+  combo: 0,
+  sweets: 2,
+  turn: 0
 };
 
-/* ========== ランダムセリフプール ========== */
-const lines = {
+const modeNames = {
+  normal: '通常',
+  interrogate: '尋問モード',
+  training: '調教モード',
+  sweet: '変態雌スイーツモード'
+};
+
+const scenes = {
+  start: {
+    narration: '薄暗い部屋。机の上にはまだ半分残ったイチゴのショートケーキ。私はソファに座り、貴女をじっと見つめています。',
+    l: '……始めましょう、舞子。\n今日は、ただ犯すだけではありません。\n貴女が私にどれだけ依存していくか、私自身が観察し、そして育てていきます。\n抵抗は、必要ありません。'
+  },
+  
+  interrogate: [
+    {
+      narration: '私は静かに近づき、貴女の顎を指先でゆっくり持ち上げる。',
+      l: '正直に答えてください、舞子。\n今、この瞬間、貴女の秘部はどのくらい濡れているのですか？\n嘘はつきませんよ。私はすでに、貴女の身体の反応をすべて把握しています。',
+      maiko: '……っ、L……'
+    },
+    {
+      narration: '指で唇を軽く押さえ、動けなくしたまま視線を落とす。',
+      l: '答えが遅いですね。\nキラ事件の頃から、私は真実を見抜くことに長けていました。\n貴女のこの震えも、瞳の揺れも……すべて、私への服従の証拠です。\nでは、もう一度聞きます。私に犯されたいのですか？'
+    },
+    {
+      narration: '耳元に唇を寄せ、熱い吐息だけを送り込む。',
+      l: '罰として、今夜は少し厳しくいきましょうか。\nただし、私は貴女を傷つけるためにやっているのではありません。\n……もっと深く、私のものにするためです。'
+    },
+    {
+      narration: '首輪のように指を首筋に這わせ、ゆっくりと締め付ける。',
+      l: '呼吸が浅くなっていますね。\nそれでも、貴女の瞳は私から逸れない。\n……可愛いですよ、舞子。'
+    }
+  ],
+  
   tease: [
-    "……舞子。動かないでください。今の貴女は、私の指一本で崩れてしまいますよ。",
-    "抵抗するほど、感度が上がっていくのがわかります。面白いですね。",
-    "貴女の身体はもう正直です。ここがこんなに熱くなっているのに、まだ拒否するのですか？",
-    "私は急いでいません。ゆっくり、貴女の理性を削っていきますから。"
+    {
+      narration: 'ブラウスのボタンを一つずつ外し、白い肌を露出させる。',
+      l: '……きれいです。\n触れるだけで、すぐに熱を持つのですね。\n私の指が、貴女の敏感な場所をすべて知っているようです。',
+      sfx: 'くちゅ……'
+    },
+    {
+      narration: '乳首を指の腹で転がし、軽く摘まむ。',
+      l: 'ここが、こんなに硬くなっている。\n舞子は、私に触られるのが好きなのですね。\n……もっと強くしてもいいですか？',
+      maiko: 'ぁ……んっ……'
+    },
+    {
+      narration: '太腿の内側をゆっくりと撫で上げ、秘部のすぐ手前で止める。',
+      l: 'まだ入れていませんよ。\nそれなのに、すでに愛液が腿を伝っています。\n……恥ずかしいとは思いませんか？　私は、その姿が好きです。'
+    },
+    {
+      narration: '下着の上から、クリトリスを指先で優しく、しかし執拗に刺激する。',
+      l: 'ほら。ここを責められると、すぐに声が出てしまいますね。\nもっと大きく鳴いてください。私だけに聞かせて。\n……良い子です。',
+      sfx: 'ぬちゅっ……くちゅくちゅ……'
+    }
   ],
-  force: [
-    "……だめです。今から先は、貴女の意志では止められません。",
-    "脚を開いてください。私に全部見せて。隠す必要はありません。",
-    "泣いても、嫌がっても、私は止めません。貴女が欲しいと言ったのと同じことなんです。",
-    "ほら……もう入れていますよ。奥まで、ゆっくりと。"
+  
+  kiss: [
+    {
+      narration: '顎を持ち上げ、唇を重ねる。舌を深くねじ込む。',
+      l: '……ん、ちゅ……ふ……。\n舞子の舌は、私の侵入を拒まないのですね。\nもっと深く、喉の奥まで味わわせてください。',
+      sfx: 'ちゅっ……れろ……あむ……'
+    },
+    {
+      narration: '息が上がるまで深く吸い、舌を絡め、喉の奥まで味わう。',
+      l: 'もっと開けてください。\n私の舌が、貴女の喉の奥を犯しているのを感じて。\n……ん、甘い。貴女のすべてが、私のものだということを、身体に教えてあげます。',
+      maiko: 'んむっ……ぷはっ……L……'
+    }
   ],
-  deep: [
-    "中が熱く締め付けてきますね……舞子。私のものだと、身体が覚えてしまっている。",
-    "もっと深く……ここにぶつかるたび、貴女の声が甘く壊れるのがわかります。",
-    "腰を動かしますよ。逃げられないように、しっかりと押さえますから。",
-    "理性が残っているうちに、はっきり言ってください。……誰に犯されているのですか？"
+  
+  insert: [
+    {
+      narration: '硬く勃起したものを、すでに濡れた入り口に押し当てる。',
+      l: '入れますよ、舞子。\n最後まで、私を受け入れてください。\n……貴女の中は、いつも私を待っているようです。',
+      sfx: 'ぬちゅっ……ずぶっ♡'
+    },
+    {
+      narration: '一気に根元まで埋める。熱い肉壁が締め付けてくる。',
+      l: '……っ。\n中が、私を締め付けて……熱い。\n舞子の中は、いつでも私を待っていたのですね。\n動かないでください。今は、私の形を、貴女の中に刻み込む時間です。',
+      maiko: 'あぁっ♡　L……入ってる……'
+    }
   ],
+  
+  thrust: [
+    {
+      narration: '腰を大きく引き、再び奥まで叩き込む。',
+      l: 'ほら。奥まで、ぐちゃぐちゃにされますよ。\n私のものが、貴女の一番深いところを抉っているのを感じてください。',
+      sfx: 'ぱんっ♡　ずちゅっ♡　ぱんっ♡'
+    },
+    {
+      narration: '子宮口を突き上げるように、容赦なく腰を打ち付ける。',
+      l: 'ポルチオを、私の先で犯してあげます。\n舞子は、奥を突かれるとすぐに壊れた声を出しますね。\n……その声が、私をさらに昂ぶらせます。',
+      maiko: 'ひぁあっ♡♡　だめっ……そこっ……！',
+      sfx: 'どぷっ♡　ぱんっ♡　ぐちゅっ♡♡'
+    },
+    {
+      narration: '脚を抱え上げ、深く、激しく、节奏を崩さず突き続ける。',
+      l: '逃げられませんよ。\n私は、貴女を孕ませるまで止めませんから。\n中が、ひくひく痙攣していますね。もう少しで、イきそうですか？',
+      sfx: 'ぱんぱんぱんっ♡♡　ぬちゅぬちゅっ♡'
+    },
+    {
+      narration: '汗だくの身体を押し倒し、耳元で低く囁きながら腰を振る。',
+      l: '私のものを、もっと奥で締め付けてください。\n舞子の中は、私にしか開かないようにしてあげます。',
+      sfx: 'ずちゅっ♡　ぐぽっ♡　ぱんっ♡♡'
+    }
+  ],
+  
   climax: [
-    "イキますか？ 私の中で、私のものとして、果ててください。",
-    "だめです。まだ許可していません。……でも、もう我慢できないようですね。",
-    "一緒に……舞子の中に、全部出します。受け止めてください。",
-    "……可愛い声ですね。もっと聞かせて。私だけが聞ける、壊れた声を。"
+    {
+      narration: '限界まで奥を抉り、精液を放出しながら腰を押し付ける。',
+      l: '出しますよ、舞子。\n私の熱いものを、子宮の奥に……全部、受け止めて。\n……良い子です。全部、飲んでください。',
+      sfx: 'どぷっ♡♡　びゅるるっ♡　どくっ♡♡',
+      maiko: 'あぁあっ♡♡♡　熱い……出てるっ♡♡'
+    },
+    {
+      narration: '射精の余韻の中で、まだ動かし続ける。',
+      l: 'まだ終わりません。\n私の精液が溢れるまで、中をかき回してあげます。\n舞子の中が、私の精液でいっぱいになっていくのを感じてください。',
+      sfx: 'くちゅっ♡　ぬぽっ♡　ずちゅっ♡'
+    },
+    {
+      narration: '抜けた後、溢れ出す白濁を指で掬い、舞子の唇に運ぶ。',
+      l: '舐めてください。\n私と貴女が混ざったものを、味わって。\n……よくできました。'
+    }
   ],
-  after: [
-    "……まだ繋がったままです。抜く必要は、ありませんよね。",
-    "貴女の中が、私のものを離したくないと言っています。……正直でいいです。",
-    "少し休みましょう。ただし、私の腕の中で、です。",
-    "次は、もっと奥まで……ね。"
+  
+  sweet: [
+    {
+      narration: '完全に理性を溶かされた舞子の身体を、ソファに押し付ける。',
+      l: '……もう、何も考えなくていいですよ。\n私の雌になって、ただ犯されることだけを考えて。\n……可愛いです、舞子。こんなに素直になって。',
+      maiko: 'はい……Lの……雌です♡♡'
+    },
+    {
+      narration: '四つん這いに固定し、後ろから一気に根元まで埋め込む。',
+      l: 'この体位が、一番深く入りますね。\n舞子の子宮が、私の形に変形していくのを感じてください。\n……よく咥えました。良い子です。',
+      sfx: 'ずぶっ♡♡　ぐちゅっ♡　ぱんっ♡♡'
+    },
+    {
+      narration: '髪を軽く掴み、腰を激しく打ち付ける。',
+      l: 'ほら、身体がびくびく震えています。\n私に犯されながら、こんなに悦んでいるなんて……本当に、変態な雌ですね。\nでも、私はそんな貴女が、たまらなく可愛いのです。',
+      maiko: 'ひぐっ♡　Lの……おちんぽっ……好きぃっ♡♡'
+    },
+    {
+      narration: '精液を注ぎ込みながら、乳首を強く摘まみ、同時にクリトリスを刺激する。',
+      l: 'イきなさい。\n私の精液を子宮に受け止めながら、壊れるようにイきなさい。\n……イったあとも、私は止めませんよ。',
+      sfx: 'どぷどぷっ♡♡　びくんっ♡　ひくっ♡♡',
+      maiko: 'イくぅっ♡♡♡　Lの中出されながらイくっ♡♡♡'
+    }
+  ],
+  
+  dote: [
+    {
+      narration: '激しく突いたあとの余韻の中で、私は舞子の汗ばんだ額に唇を寄せる。',
+      l: '……よく頑張りましたね、舞子。\nこんなに私のものを受け入れて、中をぐちゃぐちゃにされながらも、まだ私を求めて。\n……可愛い。私の、大切な雌です。',
+      dote: true
+    },
+    {
+      narration: '精液が溢れる秘部を指で優しく撫で、汚れた髪を梳く。',
+      l: 'まだ震えていますね。\n大丈夫です。私はここにいます。\n……もう少しだけ、中に入れていてもいいですか？　舞子の熱が、私を落ち着かせるのです。',
+      dote: true
+    },
+    {
+      narration: '抱き寄せたまま、ゆっくりと腰を動かしながら耳元で囁く。',
+      l: '依存度が、かなり高くなっていますね。\n私なしでは、もう満足できない身体になってしまった。\n……それでいいのです。私は、そんな舞子を、ずっと可愛がってあげますから。',
+      dote: true,
+      maiko: 'L……好き……もっと……'
+    },
+    {
+      narration: '甘いものを口に運び、溶けかけたクリームを唇で共有するように口づけする。',
+      l: 'ほら、甘いものです。\n私の好物と、舞子の味が混ざって……とても良いです。\n……もっと、私に依存してください。私は、貴女を離しません。',
+      dote: true
+    },
+    {
+      narration: '疲れた身体を抱きしめたまま、奥で小さく脈打たせ続ける。',
+      l: '動かなくても、中で繋がっているだけで、私は満足です。\nでも、舞子が「もっと」と囁くなら……私は、何度でも応えます。\n……私の、可愛い変態雌スイーツ。',
+      dote: true
+    }
+  ],
+  
+  training: [
+    {
+      narration: '尋問の続きとして、私は舞子を膝の上に座らせ、秘部を開かせる。',
+      l: 'ここからは、調教です。\n私の指示に従えない場合は、罰があります。\n……ただし、罰も、私にとっては愛の一つです。',
+      maiko: '……はい、L……'
+    },
+    {
+      narration: '指を二本、ゆっくりと中に入れ、敏感な場所を探る。',
+      l: 'ここを刺激されると、すぐに声が出ますね。\n自分で腰を動かして、私の指を気持ちよくしてください。\n……良い子ですね。',
+      sfx: 'くちゅっ……ぬちゅっ……'
+    },
+    {
+      narration: '挿入したまま、動かさず、ただ締め付けを観察する。',
+      l: '私のものを、自分から咥え込むように締め付けてください。\nできない場合は、私が強制的に動かします。\n……どちらがいいですか、舞子？'
+    }
+  ],
+  
+  useSweet: [
+    {
+      narration: '私は懐から小さなケーキを取り出し、フォークで一口分を切り分ける。',
+      l: 'ほら。口を開けてください。\n私の好物を、舞子にも分けてあげます。\n……甘いものが、体を少し楽にしてくれますよ。',
+      system: '体力が回復し、依存度がわずかに上昇しました。'
+    },
+    {
+      narration: 'クリームを指に取り、舞子の唇に塗りつける。',
+      l: '自分で舐め取ってください。\n私の指を、丁寧に。\n……良い子です。こんなに素直に従うなんて、本当に可愛い。',
+      system: '体力が回復し、依存度がわずかに上昇しました。'
+    }
   ]
 };
 
-function rand(arr) {
+function pick(arr) {
   return arr[Math.floor(Math.random() * arr.length)];
 }
 
-function clamp(v) {
-  return Math.max(0, Math.min(100, v));
+function clamp(v, min, max) {
+  return Math.max(min, Math.min(max, v));
 }
 
-function updateBars() {
-  document.getElementById('bar-arousal').style.width = state.arousal + '%';
-  document.getElementById('bar-reason').style.width = state.reason + '%';
-  document.getElementById('bar-sense').style.width = state.sense + '%';
-  document.getElementById('bar-stamina').style.width = state.stamina + '%';
-  document.getElementById('val-arousal').textContent = state.arousal;
-  document.getElementById('val-reason').textContent = state.reason;
-  document.getElementById('val-sense').textContent = state.sense;
-  document.getElementById('val-stamina').textContent = state.stamina;
-}
-
-function setNarrative(text) {
-  document.getElementById('narrative').innerHTML = text;
-}
-
-function setDialogue(text) {
-  const el = document.getElementById('dialogue');
-  if (text) {
-    el.textContent = '「' + text + '」';
-    el.classList.remove('hidden');
+function updateUI() {
+  document.getElementById('lewd-val').textContent = state.lewd;
+  document.getElementById('lewd-bar').style.width = state.lewd + '%';
+  document.getElementById('stamina-val').textContent = state.stamina;
+  document.getElementById('stamina-bar').style.width = state.stamina + '%';
+  document.getElementById('dep-val').textContent = state.dep;
+  document.getElementById('dep-bar').style.width = state.dep + '%';
+  
+  const modeEl = document.getElementById('mode-display');
+  document.getElementById('mode-text').textContent = modeNames[state.mode];
+  modeEl.className = '';
+  if (state.mode === 'sweet') modeEl.classList.add('sweet');
+  if (state.mode === 'interrogate') modeEl.classList.add('interrogate');
+  if (state.mode === 'training') modeEl.classList.add('training');
+  
+  const comboEl = document.getElementById('combo-display');
+  if (state.combo > 0) {
+    comboEl.textContent = `連続：${state.combo}`;
+    comboEl.classList.add('active');
   } else {
-    el.classList.add('hidden');
+    comboEl.textContent = '連続：0';
+    comboEl.classList.remove('active');
   }
+  
+  renderActions();
 }
 
-function setChoices(list) {
-  const box = document.getElementById('choices');
-  box.innerHTML = '';
-  list.forEach(c => {
-    const btn = document.createElement('button');
-    btn.className = 'choice';
-    btn.textContent = c.label;
-    btn.onclick = () => c.action();
-    box.appendChild(btn);
+function renderScene(data) {
+  const el = document.getElementById('scene');
+  let html = '';
+  if (data.narration) html += `<div class="narration">${data.narration}</div>`;
+  if (data.l) html += `<div class="l-line">${data.l.replace(/\n/g, '<br>')}</div>`;
+  if (data.dote) html += `<div class="dote">（私は、こうして壊れかけた貴女を、本当に愛おしく思っています）</div>`;
+  if (data.sfx) html += `<div class="sfx">${data.sfx}</div>`;
+  if (data.maiko) html += `<div class="maiko-line">「${data.maiko}」</div>`;
+  if (data.system) html += `<div class="system">${data.system}</div>`;
+  el.innerHTML = html;
+  el.scrollTop = 0;
+}
+
+function renderActions() {
+  const container = document.getElementById('actions');
+  const canAct = state.stamina > 0;
+  let html = '';
+  
+  html += `<button data-act="interrogate" ${!canAct?'disabled':''}>尋問を始める<span class="hint">淫乱+ / 依存+</span></button>`;
+  html += `<button data-act="tease" ${!canAct?'disabled':''}>身体を弄ぶ<span class="hint">淫乱+ / 感度上昇</span></button>`;
+  html += `<button data-act="kiss" ${!canAct?'disabled':''}>深く口づけする<span class="hint">依存を少し上げる</span></button>`;
+  
+  if (!state.inserted) {
+    html += `<button data-act="insert" ${!canAct?'disabled':''}>挿入する<span class="hint">繋がる</span></button>`;
+  } else {
+    html += `<button data-act="thrust" class="danger" ${!canAct?'disabled':''}>激しく突く<span class="hint">連続で強度上昇</span></button>`;
+  }
+  
+  html += `<button data-act="climax" class="danger" ${!canAct||!state.inserted?'disabled':''}>限界まで犯す<span class="hint">絶頂 / 依存大上昇</span></button>`;
+  
+  if (state.lewd >= 40 && state.mode === 'normal') {
+    html += `<button data-act="toTraining" ${!canAct?'disabled':''}>調教を始める<span class="hint">モード移行</span></button>`;
+  }
+  if (state.lewd >= 100 && state.mode !== 'sweet') {
+    html += `<button data-act="toSweet" class="sweet-btn">変態雌スイーツへ<span class="hint">完全に堕ちる</span></button>`;
+  }
+  
+  if ((state.dep >= 30 || state.mode === 'sweet') && state.inserted) {
+    html += `<button data-act="dote" class="dote-btn" ${!canAct?'disabled':''}>可愛がる<span class="hint">依存↑ / 体力微回復</span></button>`;
+  }
+  
+  if (state.sweets > 0) {
+    html += `<button data-act="useSweet" class="item-btn">甘いものを与える（残${state.sweets}）<span class="hint">体力回復 / 依存+</span></button>`;
+  }
+  
+  html += `<button data-act="reset">記録を最初から</button>`;
+  
+  container.innerHTML = html;
+  
+  container.querySelectorAll('button').forEach(btn => {
+    btn.addEventListener('click', () => doAction(btn.dataset.act));
   });
 }
 
-function checkEnd() {
+function doAction(act) {
+  if (state.stamina <= 0 && act !== 'reset' && act !== 'toSweet') return;
+  
+  let data;
+  let lewdGain = 0;
+  let staminaLoss = 0;
+  let depGain = 0;
+  let resetCombo = true;
+  
+  state.turn++;
+  
+  switch (act) {
+    case 'interrogate':
+      state.mode = state.mode === 'sweet' ? 'sweet' : 'interrogate';
+      data = pick(scenes.interrogate);
+      lewdGain = 7 + Math.floor(Math.random() * 6);
+      staminaLoss = 4;
+      depGain = 2 + Math.floor(Math.random() * 3);
+      break;
+      
+    case 'tease':
+      data = pick(scenes.tease);
+      lewdGain = 9 + Math.floor(Math.random() * 7);
+      staminaLoss = 5;
+      depGain = 1;
+      break;
+      
+    case 'kiss':
+      data = pick(scenes.kiss);
+      lewdGain = 5 + Math.floor(Math.random() * 4);
+      staminaLoss = 2;
+      depGain = 3 + Math.floor(Math.random() * 3);
+      break;
+      
+    case 'insert':
+      state.inserted = true;
+      data = pick(scenes.insert);
+      lewdGain = 14 + Math.floor(Math.random() * 8);
+      staminaLoss = 7;
+      depGain = 4;
+      break;
+      
+    case 'thrust':
+      if (!state.inserted) {
+        state.inserted = true;
+        data = pick(scenes.insert);
+        lewdGain = 12;
+        staminaLoss = 6;
+        depGain = 3;
+      } else {
+        state.combo++;
+        resetCombo = false;
+        data = pick(scenes.thrust);
+        const comboBonus = Math.min(state.combo * 3, 18);
+        lewdGain = 16 + Math.floor(Math.random() * 10) + comboBonus;
+        staminaLoss = 10 + Math.floor(state.combo * 1.5);
+        depGain = 2 + Math.floor(state.combo / 2);
+        
+        if (state.mode === 'sweet' && Math.random() > 0.35) {
+          data = pick(scenes.sweet);
+        }
+      }
+      break;
+      
+    case 'climax':
+      state.combo++;
+      resetCombo = false;
+      data = pick(scenes.climax);
+      lewdGain = 22 + Math.floor(Math.random() * 12) + Math.min(state.combo * 2, 12);
+      staminaLoss = 18 + Math.floor(state.combo * 1.2);
+      depGain = 8 + Math.floor(Math.random() * 6) + Math.floor(state.combo / 2);
+      state.climaxCount++;
+      
+      if (state.mode === 'sweet' && Math.random() > 0.3) {
+        data = pick(scenes.sweet);
+      }
+      break;
+      
+    case 'toTraining':
+      state.mode = 'training';
+      data = pick(scenes.training);
+      lewdGain = 10;
+      staminaLoss = 6;
+      depGain = 5;
+      break;
+      
+    case 'toSweet':
+      state.mode = 'sweet';
+      data = pick(scenes.sweet);
+      lewdGain = 5;
+      staminaLoss = 8;
+      depGain = 12;
+      break;
+      
+    case 'dote':
+      data = pick(scenes.dote);
+      lewdGain = 3 + Math.floor(Math.random() * 4);
+      staminaLoss = -4;
+      depGain = 6 + Math.floor(Math.random() * 5);
+      if (state.mode === 'sweet') depGain += 4;
+      break;
+      
+    case 'useSweet':
+      if (state.sweets <= 0) return;
+      state.sweets--;
+      data = pick(scenes.useSweet);
+      lewdGain = 2;
+      staminaLoss = -18;
+      depGain = 4 + Math.floor(Math.random() * 3);
+      break;
+      
+    case 'reset':
+      state.lewd = 0;
+      state.stamina = 100;
+      state.dep = 0;
+      state.mode = 'normal';
+      state.inserted = false;
+      state.climaxCount = 0;
+      state.combo = 0;
+      state.sweets = 2;
+      state.turn = 0;
+      renderScene(scenes.start);
+      updateUI();
+      return;
+  }
+  
+  if (state.mode === 'sweet' && act !== 'dote' && act !== 'useSweet' && Math.random() > 0.55) {
+    if (!data.dote) {
+      data.dote = true;
+    }
+  }
+  
+  state.lewd = clamp(state.lewd + lewdGain, 0, 100);
+  state.stamina = clamp(state.stamina - staminaLoss, 0, 100);
+  state.dep = clamp(state.dep + depGain, 0, 100);
+  
+  if (resetCombo && act !== 'thrust' && act !== 'climax') {
+    state.combo = 0;
+  }
+  
+  renderScene(data);
+  updateUI();
+  
   if (state.stamina <= 0) {
-    endGame('体力尽きた', '舞子の身体は限界を超え、意識が遠のいていく……。\n\nLは静かに貴女を抱き寄せ、額にキスを落とす。\n「……お疲れ様です。次は、もっと優しくしてあげますね。」');
-    return true;
+    setTimeout(() => {
+      const extra = document.createElement('div');
+      extra.className = 'narration';
+      extra.style.marginTop = '14px';
+      extra.innerHTML = '……体力の限界のようです。<br>今夜は、ここまでにしましょう。舞子。<br>依存度が ' + state.dep + ' まで上がっています。私は、この数字をとても気に入っています。';
+      document.getElementById('scene').appendChild(extra);
+    }, 500);
   }
-  if (state.arousal >= 100 && state.reason <= 15) {
-    endGame('完全屈服', '理性がほとんど残っていない状態で、舞子はLのすべてを受け入れ、何度も果てた。\n\n「……もう、私以外の男を知らない身体にしてしまいましたね。\n貴女は、私だけのものです。」');
-    return true;
+  
+  if (state.dep >= 100 && act === 'dote') {
+    setTimeout(() => {
+      const extra = document.createElement('div');
+      extra.className = 'dote';
+      extra.innerHTML = '（依存度が上限に達しました。私は、もう貴女を誰にも渡しません。これは、二人だけの永遠の記録です）';
+      document.getElementById('scene').appendChild(extra);
+    }, 700);
   }
-  return false;
 }
 
-function endGame(title, text) {
-  document.getElementById('scene').classList.add('hidden');
-  document.getElementById('choices').classList.add('hidden');
-  document.getElementById('status').classList.add('hidden');
-  document.getElementById('ending').style.display = 'block';
-  document.getElementById('end-title').textContent = title;
-  document.getElementById('end-text').innerHTML = text.replace(/\n/g, '<br>');
-}
+document.getElementById('start-btn').addEventListener('click', () => {
+  document.getElementById('start-screen').classList.add('hidden');
+  document.getElementById('main-screen').classList.remove('hidden');
+  renderScene(scenes.start);
+  updateUI();
+});
 
-/* ========== ステージ進行 ========== */
-const stages = [
-  // 0: 導入
-  () => {
-    setNarrative('薄暗い部屋。窓の外は夜。\n\nLはいつものように椅子に座り、親指を口に咥えながら貴女を見ている。\n突然、彼は静かに立ち上がり、貴女の側へ歩み寄った。\n\n「……今夜は、少し特別な夜にしましょう。」');
-    setDialogue(null);
-    setChoices([
-      { label: '「……どういう意味ですか？」と尋ねる', action: () => {
-        state.arousal += 5;
-        state.reason -= 3;
-        updateBars();
-        nextStage();
-      }},
-      { label: '黙って彼の顔を見つめる', action: () => {
-        state.arousal += 8;
-        state.sense += 4;
-        updateBars();
-        nextStage();
-      }}
-    ]);
-  },
-
-  // 1: 触れる
-  () => {
-    setNarrative('Lの指が、貴女の顎をそっと持ち上げる。\n熱い息が唇に近づき、それからゆっくりと耳元へ滑る。\n\n「動かないでください。……触りますから。」\n\n首筋に唇が落ち、軽い歯が皮膚を捉える。');
-    setDialogue(rand(lines.tease));
-    setChoices([
-      { label: '体を硬くして耐える', action: () => {
-        state.arousal += 10;
-        state.reason -= 8;
-        state.sense += 6;
-        updateBars();
-        if (!checkEnd()) nextStage();
-      }},
-      { label: '小さく喘いでしまう', action: () => {
-        state.arousal += 15;
-        state.reason -= 12;
-        state.sense += 10;
-        updateBars();
-        if (!checkEnd()) nextStage();
-      }},
-      { label: '「やめて……」と拒む', action: () => {
-        state.arousal += 7;
-        state.reason -= 5;
-        state.stamina -= 5;
-        updateBars();
-        if (!checkEnd()) nextStage();
-      }}
-    ]);
-  },
-
-  // 2: 衣服を剥ぐ
-  () => {
-    setNarrative('Lの手がブラウスのボタンを一つずつ外していく。\n急がず、丁寧に。\n\n「貴女の身体は、私にはもう隠しごとができません。……ここも、すでに湿っていますね。」\n\n下着の上から、熱を持った指が秘部をゆっくりと撫でる。');
-    setDialogue(rand(lines.tease));
-    setChoices([
-      { label: '腿を閉じて抵抗する', action: () => {
-        state.arousal += 12;
-        state.reason -= 10;
-        state.sense += 8;
-        state.stamina -= 8;
-        updateBars();
-        if (!checkEnd()) nextStage();
-      }},
-      { label: '脚を開いてしまう', action: () => {
-        state.arousal += 20;
-        state.reason -= 15;
-        state.sense += 12;
-        updateBars();
-        if (!checkEnd()) nextStage();
-      }}
-    ]);
-  },
-
-  // 3: 強制的に
-  () => {
-    setNarrative('Lは貴女をソファに押し倒し、両手首を片手で頭上に固定する。\nもう片方の手で、すでに濡れた入口を指で割り、ゆっくりと中へ沈めていく。\n\n<span class="sfx">ぬちゅ……くちゅっ♡</span>\n\n「……入れてしまいますよ。嫌でも、受け入れるしかありません。」');
-    setDialogue(rand(lines.force));
-    setChoices([
-      { label: '腰をよじって逃げようとする', action: () => {
-        state.arousal += 15;
-        state.reason -= 12;
-        state.sense += 10;
-        state.stamina -= 12;
-        updateBars();
-        if (!checkEnd()) nextStage();
-      }},
-      { label: '力を抜いて受け入れてしまう', action: () => {
-        state.arousal += 25;
-        state.reason -= 20;
-        state.sense += 15;
-        updateBars();
-        if (!checkEnd()) nextStage();
-      }}
-    ]);
-  },
-
-  // 4: 本格的に犯す
-  () => {
-    setNarrative('硬いものが、一気に根元まで埋まる。\n\n<span class="sfx">ずぶっ♡……んっ、奥まで……</span>\n\nLは貴女の腰をしっかりと掴み、容赦なく動き始める。\n毎度、子宮口を軽く抉るように突いてくる。\n\n「ほら……中が吸いついてきます。私を欲しがっているのが、はっきりわかりますよ。」');
-    setDialogue(rand(lines.deep));
-    setChoices([
-      { label: '「やめて……深い……」と懇願する', action: () => {
-        state.arousal += 18;
-        state.reason -= 15;
-        state.sense += 12;
-        state.stamina -= 15;
-        updateBars();
-        if (!checkEnd()) nextStage();
-      }},
-      { label: '声を抑えようと唇を噛む', action: () => {
-        state.arousal += 22;
-        state.reason -= 18;
-        state.sense += 14;
-        state.stamina -= 10;
-        updateBars();
-        if (!checkEnd()) nextStage();
-      }},
-      { label: '腰を自ら合わせ始めてしまう', action: () => {
-        state.arousal += 30;
-        state.reason -= 25;
-        state.sense += 18;
-        updateBars();
-        if (!checkEnd()) nextStage();
-      }}
-    ]);
-  },
-
-  // 5: 追い込み
-  () => {
-    setNarrative('Lの動きが速く、深くなっていく。\n乳首を口に含み、舌で転がしながら、下では容赦なく子宮を突く。\n\n<span class="sfx">ぱんっ♡ ぐちゅっ♡ ぱんっ♡♡</span>\n\n「イキそうですか？ ……まだ、許しません。もう少し、私の中で我慢してください。」');
-    setDialogue(rand(lines.climax));
-    setChoices([
-      { label: '限界まで耐える', action: () => {
-        state.arousal += 20;
-        state.reason -= 20;
-        state.sense += 15;
-        state.stamina -= 20;
-        updateBars();
-        if (!checkEnd()) nextStage();
-      }},
-      { label: 'そのまま絶頂してしまう', action: () => {
-        state.arousal = 100;
-        state.reason -= 30;
-        state.sense += 20;
-        state.stamina -= 25;
-        updateBars();
-        if (!checkEnd()) nextStage();
-      }}
-    ]);
-  },
-
-  // 6: 中出し＆余韻
-  () => {
-    setNarrative('Lの腰が深く沈み、熱いものが子宮に直接注がれる。\n\n<span class="sfx">どくっ……どくっ♡ 熱い……中に……</span>\n\n彼は抜きもせず、そのまま貴女を抱きしめたまま、静かに息を整える。\n\n「……全部、受け止めましたね。よくできました。」');
-    setDialogue(rand(lines.after));
-    setChoices([
-      { label: '力なく彼に寄りかかる', action: () => {
-        state.arousal = Math.min(100, state.arousal + 5);
-        state.reason = Math.max(0, state.reason - 10);
-        updateBars();
-        endGame('愛に沈む', '理性も体力も、ほとんど残っていない。\n\nLは貴女の髪を優しく撫でながら、耳元で低く囁く。\n\n「……私は、貴女を壊すためではなく、私だけのものにするために、今夜を使いました。\nこれからも、何度でも。……いいですね、舞子。」');
-      }},
-      { label: '「……もっと」と小さく呟く', action: () => {
-        state.arousal = 100;
-        state.reason = Math.max(0, state.reason - 15);
-        state.sense += 10;
-        updateBars();
-        endGame('更なる支配', 'その一言で、Lの目が僅かに細められる。\n\n「……わかりました。では、まだ終わらせません。」\n\n再び動き始めた彼の腰に、舞子の身体は完全に屈服していた。');
-      }}
-    ]);
-  }
-];
-
-function nextStage() {
-  state.stage++;
-  if (state.stage >= stages.length) {
-    endGame('終わり', '夜はまだ長い。……Lはそう言って、再び貴女を抱き寄せた。');
-    return;
-  }
-  stages[state.stage]();
-}
-
-/* 開始 */
-updateBars();
-stages[0]();
+document.getElementById('restart-btn').addEventListener('click', () => {
+  document.getElementById('end-screen').classList.add('hidden');
+  document.getElementById('main-screen').classList.remove('hidden');
+  doAction('reset');
+});
 </script>
 </body>
 </html>
